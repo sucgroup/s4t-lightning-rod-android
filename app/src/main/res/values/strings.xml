@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LR Android</string>
+
+    <!-- notification -->
+    <string name="notification_title">Lightning Rod</string>
+    <string name="notification_text">Lightning Rod is running</string>
 </resources>
