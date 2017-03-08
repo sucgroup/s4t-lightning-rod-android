@@ -1,0 +1,6 @@
+
+# see /app/build.gradle
+js/index.js
+js/package.json
+js/node_modules
+

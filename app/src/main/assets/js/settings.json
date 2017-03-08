@@ -1,0 +1,63 @@
+{
+	"config":{
+	
+		"device": "android",
+		"log": {
+		    "logfile": "/dev/stdout",
+		    "loglevel": "info"
+		},
+		"wamp":
+		{
+			"url_wamp": "",
+			"port_wamp": "8181",
+			"realm": "s4t"
+		},
+
+		"reverse":
+		{
+			"server":{
+				"url_reverse": "",
+				"port_reverse": "8080"
+			},
+			"lib":{
+				"bin":"./node_modules/node-reverse-wstunnel/bin/wstt.js"
+			},
+			"pid":""
+		},
+
+		"socat":{
+			"client":{
+				"port":"20000"
+			},
+			"pid":""
+		},
+
+		"board":
+		{
+			"code":"",
+			"status": "new",
+			"services":{
+				"ssh":{
+					"port":"22"
+				},
+				"tty":{
+					"port":"2233"
+				},
+				"ideino":{
+					"port":"2424"
+				},
+				"osjs":{
+					"port":"8000"
+				}
+			},
+			
+			"position":{
+				"altitude":0,
+				"longitude":0,
+				"latitude":0
+				
+			}
+		}
+
+	}
+}

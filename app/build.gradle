@@ -27,3 +27,52 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
 }
+
+
+apply plugin: 'com.moowork.node'
+
+node {
+    // Enabled the automatic download.
+    download = true
+    version = '6.10.0'
+    npmVersion = '3.10.10'
+
+    workDir = file("${project.buildDir}/nodejs")
+    npmWorkDir = file("${project.buildDir}/npm")
+
+    nodeModulesDir = file("${project.projectDir}/../s4t-lightning-rod")
+}
+
+task cleanJs(type: NpmTask) {
+    args = ['run', 'clean']
+}
+clean.dependsOn cleanJs
+
+
+
+task copyDistPackageJson(type: Copy, dependsOn: npmInstall)
+copyDistPackageJson {
+    from '../s4t-lightning-rod/package.dist.json'
+    into 'src/main/assets/js/'
+    rename 'package.dist.json', 'package.json'
+    duplicatesStrategy = 'include'
+    inputs.sourceFiles.stopExecutionIfEmpty()
+}
+
+task installExtraJsDeps(type: NpmTask, dependsOn: copyDistPackageJson) {
+    workingDir = file("${project.projectDir}/src/main/assets/js/")
+    args = ['install']
+}
+
+task buildJs(type: NpmTask, dependsOn: installExtraJsDeps) {
+    args = ['run', 'build']
+}
+
+task copyDistJs(type: Copy, dependsOn: buildJs)
+copyDistJs {
+    from '../s4t-lightning-rod/dist/'
+    into 'src/main/assets/js/'
+    duplicatesStrategy = 'include'
+}
+
+preBuild.dependsOn copyDistJs

@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Scanner;
@@ -89,10 +90,14 @@ public class NodeService extends Service implements Runnable {
                     "PATH=" + mNodeAssetsManager.getTermuxPath() + "/usr/bin:$PATH"
             };
 
-            p = Runtime.getRuntime().exec(new String[]{
-                    mNodeAssetsManager.getTermuxPath() + "/usr/bin/node",
-                    mNodeAssetsManager.getJsPath() + "/index.js"
-            }, envp);
+            p = Runtime.getRuntime().exec(
+                    new String[]{
+                            mNodeAssetsManager.getTermuxPath() + "/usr/bin/node",
+                            mNodeAssetsManager.getJsPath() + "/index.js"
+                    },
+                    envp, // environment vars
+                    new File(mNodeAssetsManager.getJsPath()) // working dir
+            );
         } catch (IOException e) {
             throw new RuntimeException(e); // todo
         }
