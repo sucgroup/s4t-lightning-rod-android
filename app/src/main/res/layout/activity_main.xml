@@ -10,31 +10,61 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="ru.esmukov.kpfu.lightningrodandroid.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical" >
+            android:orientation="horizontal">
 
-            <EditText
+            <TextView
+                android:id="@+id/textView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:inputType="none"
-                android:ems="10"
-                android:editable="false"
-                android:focusable="false"
-                android:textIsSelectable="false"
-                android:id="@+id/logText" />
+                android:layout_height="wrap_content"
+                android:text="Hello World!" />
+
+            <Button
+                android:id="@+id/button_start"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/start_lightning_rod"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/button_stop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/stop_lightning_rod"
+                />
+
         </LinearLayout>
-    </ScrollView>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/logText"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:editable="false"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="none"
+                    android:textIsSelectable="false" />
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
 </RelativeLayout>
