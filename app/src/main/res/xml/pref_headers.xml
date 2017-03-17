@@ -8,13 +8,8 @@
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="ru.esmukov.kpfu.lightningrodandroid.SettingsActivity$NotificationPreferenceFragment"
-        android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/pref_header_notifications" />
-
-    <header
-        android:fragment="ru.esmukov.kpfu.lightningrodandroid.SettingsActivity$DataSyncPreferenceFragment"
+        android:fragment="ru.esmukov.kpfu.lightningrodandroid.SettingsActivity$LightningRodPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_data_sync" />
+        android:title="@string/pref_header_lightning_rod_settings" />
 
 </preference-headers>

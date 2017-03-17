@@ -1,0 +1,91 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/pref_category_wamp">
+        <EditTextPreference
+            android:inputType="text"
+            android:key="wamp_url"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_wamp_url" />
+
+        <EditTextPreference
+            android:inputType="text"
+            android:key="wamp_port"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_wamp_port" />
+
+        <EditTextPreference
+            android:inputType="text"
+            android:key="wamp_realm"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_wamp_realm" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_reverse">
+        <EditTextPreference
+            android:inputType="text"
+            android:key="reverse_url"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_reverse_url" />
+
+        <EditTextPreference
+            android:inputType="text"
+            android:key="reverse_port"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_reverse_port" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_board">
+        <EditTextPreference
+            android:inputType="text"
+            android:key="board_code"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_board_code" />
+
+        <ListPreference
+            android:entries="@array/pref_board_status_titles"
+            android:entryValues="@array/pref_board_status_values"
+            android:key="board_status"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/pref_title_board_status" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_category_position">
+        <EditTextPreference
+            android:inputType="numberDecimal"
+            android:key="position_altitude"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_position_altitude" />
+
+        <EditTextPreference
+            android:inputType="numberDecimal"
+            android:key="position_longitude"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_position_longitude" />
+
+        <EditTextPreference
+            android:inputType="numberDecimal"
+            android:key="position_latitude"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/pref_title_position_latitude" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
