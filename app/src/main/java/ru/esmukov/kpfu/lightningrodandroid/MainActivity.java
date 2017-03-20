@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class IncomingHandler extends Handler {
+        @SuppressWarnings("unchecked")
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
