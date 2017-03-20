@@ -53,21 +53,7 @@ clean.dependsOn cleanJs
 
 
 
-task copyDistPackageJson(type: Copy, dependsOn: npmInstall)
-copyDistPackageJson {
-    from '../s4t-lightning-rod/package.dist.json'
-    into 'src/main/assets/js/'
-    rename 'package.dist.json', 'package.json'
-    duplicatesStrategy = 'include'
-    inputs.sourceFiles.stopExecutionIfEmpty()
-}
-
-task installExtraJsDeps(type: NpmTask, dependsOn: copyDistPackageJson) {
-    workingDir = file("${project.projectDir}/src/main/assets/js/")
-    args = ['install']
-}
-
-task buildJs(type: NpmTask, dependsOn: installExtraJsDeps) {
+task buildJs(type: NpmTask, dependsOn: npmInstall) {
     args = ['run', 'build']
 }
 
@@ -78,4 +64,9 @@ copyDistJs {
     duplicatesStrategy = 'include'
 }
 
-preBuild.dependsOn copyDistJs
+task installExtraJsDeps(type: NpmTask, dependsOn: copyDistJs) {
+    workingDir = file("${project.projectDir}/src/main/assets/js/")
+    args = ['install']
+}
+
+preBuild.dependsOn installExtraJsDeps
