@@ -7,6 +7,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by kostya on 03/03/2017.
@@ -23,10 +27,17 @@ import java.io.OutputStream;
 public class NodeAssetsManager {
     private final String JS_PATH = "js";
     private final String TERMUX_PATH = "termux";
+    // Files in this list will not be overwritten if exist.
+    private final Set<String> PRESERVE_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            "js/drivers.json",
+            "js/plugins.json",
+            "js/settings.json"
+    )));
 
     private static boolean mExtracted = false;
 
     private Context mContext;
+    private byte[] mBuffer = new byte[32000];
 
     public NodeAssetsManager(Context context) {
         this.mContext = context;
@@ -77,12 +88,13 @@ public class NodeAssetsManager {
         File file = new File(mContext.getFilesDir(), topath + "/" + filename);
 
         try {
+            if (PRESERVE_FILES.contains(topath + "/" + filename)
+                    && file.exists())
+                return;
+
             InputStream is = mContext.getAssets().open(frompath + "/" + filename);
             OutputStream os = new FileOutputStream(file);
-            // todo buffer
-            byte[] data = new byte[is.available()];
-            is.read(data);
-            os.write(data);
+            pipe(is, os);
             is.close();
             os.close();
 
@@ -93,6 +105,15 @@ public class NodeAssetsManager {
             }
         } catch (IOException e) {
             throw new RuntimeException(e); // todo ??
+        }
+    }
+
+    private void pipe(InputStream is, OutputStream os) throws IOException {
+        while (true) {
+            int read = is.read(mBuffer);
+            if (read <= 0)
+                break;
+            os.write(mBuffer, 0, read);
         }
     }
 

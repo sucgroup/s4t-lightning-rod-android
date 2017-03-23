@@ -2,6 +2,7 @@ package ru.esmukov.kpfu.lightningrodandroid;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -174,10 +176,27 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.menu_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
+            if (mService == null) {
+                startActivity(new Intent(this, SettingsActivity.class));
+            } else {
+                showStopNodeProcessDialog();
+            }
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showStopNodeProcessDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Stop Node process first")
+                .setMessage("In order to change settings, you must stop the Node process first.")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setNeutralButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .show();
     }
 }
