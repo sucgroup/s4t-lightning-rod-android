@@ -4,23 +4,21 @@ package ru.esmukov.kpfu.lightningrodandroid;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
-import android.preference.RingtonePreference;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
 import java.util.List;
+
+import ru.esmukov.kpfu.lightningrodandroid.settings.SettingsManager;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -188,30 +186,43 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LightningRodPreferenceFragment extends PreferenceFragment {
+        private NodeAssetsManager mNodeAssetsManager;
+        private SettingsManager mSettingsManager;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_lightning_rod);
             setHasOptionsMenu(true);
 
+            mNodeAssetsManager = new NodeAssetsManager(getActivity());
+            mSettingsManager = SettingsManager.load(mNodeAssetsManager);
+
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
 
-            bindPreferenceSummaryToValue(findPreference("wamp_url"));
-            bindPreferenceSummaryToValue(findPreference("wamp_port"));
-            bindPreferenceSummaryToValue(findPreference("wamp_realm"));
+            initEditPreference("wamp_url", mSettingsManager.getSettings().getConfig().getWamp().getUrl());
+            initEditPreference("wamp_port", mSettingsManager.getSettings().getConfig().getWamp().getPort());
+            initEditPreference("wamp_realm", mSettingsManager.getSettings().getConfig().getWamp().getRealm());
 
-            bindPreferenceSummaryToValue(findPreference("reverse_url"));
-            bindPreferenceSummaryToValue(findPreference("reverse_port"));
+            initEditPreference("reverse_url", mSettingsManager.getSettings().getConfig().getReverse().getServer().getUrl());
+            initEditPreference("reverse_port", mSettingsManager.getSettings().getConfig().getReverse().getServer().getPort());
 
-            bindPreferenceSummaryToValue(findPreference("board_code"));
-            bindPreferenceSummaryToValue(findPreference("board_status"));
+            initEditPreference("board_code", mSettingsManager.getSettings().getConfig().getBoard().getCode());
+            bindPreferenceSummaryToValue(findPreference("board_status")); // todo !!
 
-            bindPreferenceSummaryToValue(findPreference("position_altitude"));
-            bindPreferenceSummaryToValue(findPreference("position_longitude"));
-            bindPreferenceSummaryToValue(findPreference("position_latitude"));
+            initEditPreference("position_altitude", Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getAltitude()));
+            initEditPreference("position_longitude", Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getLongitude()));
+            initEditPreference("position_latitude", Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getLatitude()));
+        }
+
+        private void initEditPreference(String id, String value) {
+            EditTextPreference editTextPreference = (EditTextPreference) findPreference(id);
+            editTextPreference.setText(value);
+            bindPreferenceSummaryToValue(editTextPreference);
+            // todo !! on change save new value
         }
 
         @Override
