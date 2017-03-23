@@ -22,11 +22,13 @@ public class LogKeeper {
     private final Object mLock = new Object();
     private final List<Messenger> mClients = new ArrayList<>();
     private final LinkedList<LogRecord> mLogrecords = new LinkedList<>();
+    private boolean[] mOpenPipes = new boolean[] {true, true};
 
     public void reset() {
         synchronized (mLock) {
             mClients.clear();
             mLogrecords.clear();
+            mOpenPipes = new boolean[] {true, true};
         }
     }
 
@@ -44,6 +46,11 @@ public class LogKeeper {
 
     public void closePipe(byte type) {
         addLine("<pipe closed>", type);
+
+        mOpenPipes[type - 1] = false;
+        if (!mOpenPipes[0] && !mOpenPipes[1]) {
+            sendMessage(Message.obtain(null, MainActivity.MSG_PROCESS_STOPPED));
+        }
     }
 
     public void subscribe(Messenger client) {
@@ -63,10 +70,15 @@ public class LogKeeper {
     }
 
     private void sendPartial(LogRecord logRecord) {
+        sendMessage(Message.obtain(null, MainActivity.MSG_PARTIAL_LOG, logRecord));
+    }
+
+    private void sendMessage(Message msg) {
         for (int i = mClients.size() - 1; i >= 0; i--) {
             try {
-                // todo log
-                mClients.get(i).send(Message.obtain(null, MainActivity.MSG_PARTIAL_LOG, logRecord));
+                Message m = Message.obtain();
+                m.copyFrom(msg);
+                mClients.get(i).send(m);
             } catch (RemoteException e) {
                 // The client is dead.  Remove it from the list;
                 // we are going through the list from back to front

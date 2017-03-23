@@ -13,6 +13,7 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int MSG_FULL_LOG = 1;
     public static final int MSG_PARTIAL_LOG = 2;
+    public static final int MSG_PROCESS_STOPPED = 3;
 
     private final Messenger mMessenger = new Messenger(new IncomingHandler());
     private Messenger mService = null;
@@ -32,11 +34,13 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName className, IBinder service) {
             mService = new Messenger(service);
             sendRegisterMessage();
+            renderButtons();
         }
 
         public void onServiceDisconnected(ComponentName className) {
             // todo notify activity that a service has been destroyed
             mService = null;
+            renderButtons();
         }
     };
 
@@ -46,15 +50,63 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         logText = (EditText) findViewById(R.id.logText);
 
+        hideButtons();
+        startNodeService();
+
+        findViewById(R.id.button_start)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mService == null) {
+                            MainActivity.this.startNodeService();
+                        }
+                    }
+                });
+
+        findViewById(R.id.button_stop)
+                .setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mService != null) {
+                            MainActivity.this.stopNodeService();
+                        }
+                    }
+                });
+    }
+
+    private void startNodeService() {
         startService(new Intent(this, NodeService.class));
         bindService(new Intent(this, NodeService.class), mConnection, Context.BIND_AUTO_CREATE);
     }
 
-    @Override
-    protected void onDestroy() {
+    private void stopNodeService() {
+        unbindNodeService();
+        stopService(new Intent(this, NodeService.class));
+    }
+
+    private void unbindNodeService() {
         sendUnregisterMessage();
         unbindService(mConnection);
+    }
 
+    private void renderButtons() {
+        findViewById(R.id.button_start).setVisibility(View.GONE);
+        findViewById(R.id.button_stop).setVisibility(View.GONE);
+        if (mService == null) {
+            findViewById(R.id.button_start).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.button_stop).setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideButtons() {
+        findViewById(R.id.button_start).setVisibility(View.GONE);
+        findViewById(R.id.button_stop).setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        unbindNodeService();
         super.onDestroy();
     }
 
@@ -74,6 +126,9 @@ public class MainActivity extends AppCompatActivity {
                     LogKeeper.LogRecord logRecord = (LogKeeper.LogRecord) msg.obj;
                     logText.append(logRecord.getLine() + "\n");
                     break;
+                case MSG_PROCESS_STOPPED:
+                    unbindNodeService();
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -87,6 +142,7 @@ public class MainActivity extends AppCompatActivity {
             mService.send(msg);
         } catch (RemoteException e) {
             mService = null;
+            renderButtons();
         }
     }
 
@@ -102,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
             // RemoteException -> service has been already destroyed -> no need to unregister
         } finally {
             mService = null;
+            renderButtons();
         }
     }
 

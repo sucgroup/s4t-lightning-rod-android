@@ -24,6 +24,8 @@ public class NodeAssetsManager {
     private final String JS_PATH = "js";
     private final String TERMUX_PATH = "termux";
 
+    private static boolean mExtracted = false;
+
     private Context mContext;
 
     public NodeAssetsManager(Context context) {
@@ -31,8 +33,12 @@ public class NodeAssetsManager {
     }
 
     public void extractAll() {
+        if (mExtracted)
+            return;
+
         this.extractJs();
         this.extractTermux();
+        mExtracted = true;
     }
 
     public String getTermuxPath() {

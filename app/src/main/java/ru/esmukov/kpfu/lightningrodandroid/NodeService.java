@@ -46,8 +46,6 @@ public class NodeService extends Service implements Runnable {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mThread == null || !mThread.isAlive()) {
-            mNodeAssetsManager.extractAll();
-
             mLogKeeper.reset();
             mThread = new Thread(this, NODE_THREAD_NAME);
             mThread.start();
@@ -83,6 +81,10 @@ public class NodeService extends Service implements Runnable {
 
     @Override
     public void run() {
+        synchronized (mNodeAssetsManager) {
+            mNodeAssetsManager.extractAll();
+        }
+
         Process p;
         try {
             String[] envp = {
@@ -119,6 +121,8 @@ public class NodeService extends Service implements Runnable {
         } finally {
             stderrThread.interrupt();
             stdoutThread.interrupt();
+
+            stopSelf();
         }
     }
 
