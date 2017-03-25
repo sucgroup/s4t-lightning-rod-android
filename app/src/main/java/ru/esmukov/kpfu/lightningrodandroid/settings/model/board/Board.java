@@ -1,12 +1,14 @@
 package ru.esmukov.kpfu.lightningrodandroid.settings.model.board;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by kostya on 23/03/2017.
  */
 
 public class Board {
     String code;
-    String status; // todo enum
+    Status status;
     Position position;
 
     public String getCode() {
@@ -17,11 +19,11 @@ public class Board {
         this.code = code;
     }
 
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 
@@ -29,4 +31,10 @@ public class Board {
         return position;
     }
 
+    public enum Status {
+        @SerializedName("new")
+        NEW,
+        @SerializedName("registered")
+        REGISTERED
+    }
 }

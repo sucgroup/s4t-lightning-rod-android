@@ -54,8 +54,6 @@
             android:title="@string/pref_title_board_code" />
 
         <ListPreference
-            android:entries="@array/pref_board_status_titles"
-            android:entryValues="@array/pref_board_status_values"
             android:key="board_status"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"

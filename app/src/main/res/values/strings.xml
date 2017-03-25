@@ -35,13 +35,6 @@
 
     <string name="pref_title_board_code">Code</string>
     <string name="pref_title_board_status">Status</string>
-    <string-array name="pref_board_status_titles">
-        <item>New</item>
-        <!-- todo add other statuses -->
-    </string-array>
-    <string-array name="pref_board_status_values">
-        <item>new</item>
-    </string-array>
 
     <string name="pref_title_position_altitude">Altitude</string>
     <string name="pref_title_position_longitude">Longitude</string>
