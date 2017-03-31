@@ -27,6 +27,7 @@ import java.util.Set;
 public class NodeAssetsManager {
     private final String JS_PATH = "js";
     private final String TERMUX_PATH = "termux";
+    private final String SH_PATH = "sh";
     // Files in this list will not be overwritten if exist.
     private final Set<String> PRESERVE_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             "js/drivers.json",
@@ -48,6 +49,7 @@ public class NodeAssetsManager {
             return;
 
         this.extractJs();
+        this.extractSh();
         this.extractTermux();
         mExtracted = true;
     }
@@ -63,6 +65,10 @@ public class NodeAssetsManager {
     private void extractJs() {
         extractAssetTree(JS_PATH, JS_PATH);
         //extractAssetToFile(JS_PATH, JS_PATH, "index.js");
+    }
+
+    private void extractSh() {
+        extractAssetToFile(SH_PATH, SH_PATH, "wsst", true);
     }
 
     private void extractTermux() {
