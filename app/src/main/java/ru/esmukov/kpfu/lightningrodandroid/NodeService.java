@@ -89,7 +89,11 @@ public class NodeService extends Service implements Runnable {
         try {
             String[] envp = {
                     "LD_LIBRARY_PATH=" + mNodeAssetsManager.getTermuxPath() + "/usr/lib" + ":$LD_LIBRARY_PATH",
-                    "PATH=" + mNodeAssetsManager.getTermuxPath() + "/usr/bin:$PATH"
+                    "PATH=" + mNodeAssetsManager.getTermuxPath() + "/usr/bin:$PATH",
+
+                    // http://android.stackexchange.com/a/171474
+                    "ANDROID_DATA=/data",
+                    "ANDROID_ROOT=/system"
             };
 
             p = Runtime.getRuntime().exec(
