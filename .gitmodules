@@ -1,4 +1,4 @@
 [submodule "s4t-lightning-rod"]
 	path = s4t-lightning-rod
 	url = https://github.com/KostyaEsmukov/s4t-lightning-rod.git
-	branch = feature/android_device
+	branch = master_android
