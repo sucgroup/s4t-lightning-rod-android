@@ -34,6 +34,9 @@ public class NodeAssetsManager {
             "js/plugins.json",
             "js/settings.json"
     )));
+    private final Set<DefaultFilePair> DEFAULT_FILES = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+            new DefaultFilePair("js/settings.android.default.json", "js/settings.json")
+    )));
 
     private static boolean mExtracted = false;
 
@@ -51,6 +54,8 @@ public class NodeAssetsManager {
         this.extractJs();
         this.extractSh();
         this.extractTermux();
+        this.extractDefaultFiles();
+
         mExtracted = true;
     }
 
@@ -68,7 +73,7 @@ public class NodeAssetsManager {
     }
 
     private void extractSh() {
-        extractAssetToFile(SH_PATH, SH_PATH, "wsst", true);
+        extractAssetToFile(SH_PATH, SH_PATH, "wsst", "wsst", true);
     }
 
     private void extractTermux() {
@@ -82,23 +87,38 @@ public class NodeAssetsManager {
         extractAssetTree(TERMUX_PATH + "/" + platform, TERMUX_PATH);
     }
 
-    private void extractAssetToFile(String frompath, String topath, String filename) {
-        extractAssetToFile(frompath, topath, filename, false);
+    private void extractDefaultFiles() {
+        for (DefaultFilePair defaultFilePair : DEFAULT_FILES) {
+            File file = new File(mContext.getFilesDir(), defaultFilePair.to);
+            if (file.exists())
+                continue;
+
+            extractAssetToFile(
+                    defaultFilePair.getFromPath(), defaultFilePair.getToPath(),
+                    defaultFilePair.getFromFilename(), defaultFilePair.getToFilename(),
+                    defaultFilePair.isBin());
+        }
     }
 
-    private void extractAssetToFile(String frompath, String topath, String filename,
+    private void extractAssetToFile(String frompath, String topath, String filename) {
+        extractAssetToFile(frompath, topath, filename, filename, false);
+    }
+
+    private void extractAssetToFile(String frompath, String topath,
+                                    String fromfilename,
+                                    String tofilename,
                                     boolean setExecutable) {
         // mkdir -p
         new File(mContext.getFilesDir(), topath).mkdirs();
 
-        File file = new File(mContext.getFilesDir(), topath + "/" + filename);
+        File file = new File(mContext.getFilesDir(), topath + "/" + tofilename);
 
         try {
-            if (PRESERVE_FILES.contains(topath + "/" + filename)
+            if (PRESERVE_FILES.contains(topath + "/" + tofilename)
                     && file.exists())
                 return;
 
-            InputStream is = mContext.getAssets().open(frompath + "/" + filename);
+            InputStream is = mContext.getAssets().open(frompath + "/" + fromfilename);
             OutputStream os = new FileOutputStream(file);
             pipe(is, os);
             is.close();
@@ -106,7 +126,7 @@ public class NodeAssetsManager {
 
             if (setExecutable) {
                 if (!file.setExecutable(true)) {
-                    throw new IOException("Unable to set +x bit on file: " + topath + "/" + filename);
+                    throw new IOException("Unable to set +x bit on file: " + topath + "/" + tofilename);
                 }
             }
         } catch (IOException e) {
@@ -138,12 +158,61 @@ public class NodeAssetsManager {
                 if (mContext.getAssets().list(from + "/" + path).length > 0) {
                     extractAssetTree(from + "/" + path, to + "/" + path);
                 } else {
-                    extractAssetToFile(from, to, path, isBin(to));
+                    extractAssetToFile(from, to, path, path, isBin(to));
                 }
             }
 
         } catch (IOException e) {
             throw new RuntimeException(e); // todo ??
+        }
+    }
+
+    private static class DefaultFilePair {
+        public String from;
+        public String to;
+
+        public DefaultFilePair(String from, String to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        public String getFromPath() {
+            return from.substring(0, from.lastIndexOf("/"));
+        }
+
+        public String getFromFilename() {
+            return from.substring(from.lastIndexOf("/") + 1);
+        }
+
+        public String getToPath() {
+            return to.substring(0, to.lastIndexOf("/"));
+        }
+
+        public String getToFilename() {
+            return to.substring(to.lastIndexOf("/") + 1);
+        }
+
+        public boolean isBin() {
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DefaultFilePair that = (DefaultFilePair) o;
+
+            if (!from.equals(that.from)) return false;
+            return to.equals(that.to);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = from.hashCode();
+            result = 31 * result + to.hashCode();
+            return result;
         }
     }
 }

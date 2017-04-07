@@ -1,4 +1,4 @@
-package ru.esmukov.kpfu.lightningrodandroid;
+package ru.esmukov.kpfu.lightningrodandroid.utils;
 
 /**
  * Created by kostya on 25/03/2017.

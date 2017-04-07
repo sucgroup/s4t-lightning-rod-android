@@ -20,6 +20,8 @@ import android.widget.EditText;
 
 import java.util.List;
 
+import ru.esmukov.kpfu.lightningrodandroid.settings.SettingsActivity;
+
 
 public class MainActivity extends AppCompatActivity {
 

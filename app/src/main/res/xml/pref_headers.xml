@@ -3,12 +3,12 @@
     <!-- These settings headers are only used on tablets. -->
 
     <header
-        android:fragment="ru.esmukov.kpfu.lightningrodandroid.SettingsActivity$GeneralPreferenceFragment"
+        android:fragment="ru.esmukov.kpfu.lightningrodandroid.settings.SettingsActivity$GeneralPreferenceFragment"
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_general" />
 
     <header
-        android:fragment="ru.esmukov.kpfu.lightningrodandroid.SettingsActivity$LightningRodPreferenceFragment"
+        android:fragment="ru.esmukov.kpfu.lightningrodandroid.settings.SettingsActivity$LightningRodPreferenceFragment"
         android:icon="@drawable/ic_sync_black_24dp"
         android:title="@string/pref_header_lightning_rod_settings" />
 

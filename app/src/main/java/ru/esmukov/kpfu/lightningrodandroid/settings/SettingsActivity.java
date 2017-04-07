@@ -1,4 +1,4 @@
-package ru.esmukov.kpfu.lightningrodandroid;
+package ru.esmukov.kpfu.lightningrodandroid.settings;
 
 
 import android.annotation.TargetApi;
@@ -22,8 +22,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.esmukov.kpfu.lightningrodandroid.settings.SettingsManager;
-import ru.esmukov.kpfu.lightningrodandroid.settings.model.board.Board;
+import ru.esmukov.kpfu.lightningrodandroid.AppCompatPreferenceActivity;
+import ru.esmukov.kpfu.lightningrodandroid.NodeAssetsManager;
+import ru.esmukov.kpfu.lightningrodandroid.R;
+import ru.esmukov.kpfu.lightningrodandroid.utils.StringUtils;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -165,7 +167,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class LightningRodPreferenceFragment extends PreferenceFragment {
         private NodeAssetsManager mNodeAssetsManager;
-        private SettingsManager mSettingsManager;
+        private SettingsStorage mSettingsStorage;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -174,7 +176,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             setHasOptionsMenu(true);
 
             mNodeAssetsManager = new NodeAssetsManager(getActivity());
-            mSettingsManager = SettingsManager.load(mNodeAssetsManager);
+            mSettingsStorage = new SettingsStorage(getActivity(),
+                    SettingsJsonManager.loadDefaultSettings(mNodeAssetsManager));
 
             initPreferences();
         }
@@ -185,105 +188,25 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // updated to reflect the new value, per the Android Design
             // guidelines.
 
-            initEditPreference(
-                    "wamp_url",
-                    mSettingsManager.getSettings().getConfig().getWamp().getUrl(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getWamp().setUrl(value);
-                        }
-                    });
+            initEditPreferenceString("wamp_url", "config.wamp.url_wamp");
+            initEditPreferenceString("wamp_port", "config.wamp.port_wamp");
+            initEditPreferenceString("wamp_realm", "config.wamp.realm");
 
-            initEditPreference(
-                    "wamp_port",
-                    mSettingsManager.getSettings().getConfig().getWamp().getPort(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getWamp().setPort(value);
-                        }
-                    });
-            initEditPreference(
-                    "wamp_realm",
-                    mSettingsManager.getSettings().getConfig().getWamp().getRealm(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getWamp().setRealm(value);
-                        }
-                    });
+            initEditPreferenceString("reverse_url", "config.reverse.server.url_reverse");
+            initEditPreferenceString("reverse_port", "config.reverse.server.port_reverse");
 
-            initEditPreference(
-                    "reverse_url",
-                    mSettingsManager.getSettings().getConfig().getReverse().getServer().getUrl(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getReverse().getServer().setUrl(value);
-                        }
-                    });
-            initEditPreference(
-                    "reverse_port",
-                    mSettingsManager.getSettings().getConfig().getReverse().getServer().getPort(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getReverse().getServer().setPort(value);
-                        }
-                    });
+            initEditPreferenceString("board_code", "config.board.code");
+            initListPreferenceEnum("board_status", "config.board.status", BoardStatus.class);
 
-            initEditPreference(
-                    "board_code",
-                    mSettingsManager.getSettings().getConfig().getBoard().getCode(),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getBoard().setCode(value);
-                        }
-                    });
-            initListPreference(
-                    "board_status",
-                    mSettingsManager.getSettings().getConfig().getBoard().getStatus(),
-                    new Setter<Board.Status>() {
-                        @Override
-                        public void set(Board.Status value) {
-                            mSettingsManager.getSettings().getConfig().getBoard().setStatus(value);
-                        }
-                    });
-
-            initEditPreference(
-                    "position_altitude",
-                    Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getAltitude()),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getBoard().getPosition().setAltitude(Double.valueOf(value));
-                        }
-                    });
-            initEditPreference(
-                    "position_longitude",
-                    Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getLongitude()),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getBoard().getPosition().setLongitude(Double.valueOf(value));
-                        }
-                    });
-            initEditPreference(
-                    "position_latitude",
-                    Double.toString(mSettingsManager.getSettings().getConfig().getBoard().getPosition().getLatitude()),
-                    new Setter<String>() {
-                        @Override
-                        public void set(String value) {
-                            mSettingsManager.getSettings().getConfig().getBoard().getPosition().setLatitude(Double.valueOf(value));
-                        }
-                    });
+            initEditPreferenceDouble("position_altitude", "config.board.position.altitude");
+            initEditPreferenceDouble("position_longitude", "config.board.position.longitude");
+            initEditPreferenceDouble("position_latitude", "config.board.position.latitude");
         }
 
         private boolean saveSettings() {
             try {
-                mSettingsManager.save();
+                SettingsJsonManager.saveSettings(mNodeAssetsManager,
+                        mSettingsStorage.toJsonObject());
                 return true;
             }
             catch (IOException e) {
@@ -294,20 +217,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         }
 
-        private void initEditPreference(String id, String value, final Setter<String> setter) {
+        private void initEditPreferenceString(String id, final String settingKey) {
             EditTextPreference editTextPreference = (EditTextPreference) findPreference(id);
-            editTextPreference.setText(value);
+            editTextPreference.setText(mSettingsStorage.getString(settingKey));
 
             // render summary immediately
             updatePreferenceSummary(editTextPreference,
                     PreferenceManager
-                        .getDefaultSharedPreferences(editTextPreference.getContext())
-                        .getString(editTextPreference.getKey(), ""));
+                            .getDefaultSharedPreferences(editTextPreference.getContext())
+                            .getString(editTextPreference.getKey(), ""));
 
             editTextPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    setter.set((String) newValue);
+                    mSettingsStorage.setString(settingKey, (String) newValue);
 
                     boolean res = saveSettings();
                     if (res) {
@@ -318,13 +241,38 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             });
         }
 
-        //private void initListPreference(String id, Class<? extends Enum> enumClass) {
-        private <E extends Enum> void initListPreference(String id, final E value, final Setter<E> setter) {
+        private void initEditPreferenceDouble(String id, final String settingKey) {
+            EditTextPreference editTextPreference = (EditTextPreference) findPreference(id);
+            editTextPreference.setText(Double.toString(mSettingsStorage.getDouble(settingKey)));
+
+            // render summary immediately
+            updatePreferenceSummary(editTextPreference,
+                    PreferenceManager
+                            .getDefaultSharedPreferences(editTextPreference.getContext())
+                            .getString(editTextPreference.getKey(), ""));
+
+            editTextPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+                @Override
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    mSettingsStorage.setDouble(settingKey, Double.valueOf((String) newValue));
+
+                    boolean res = saveSettings();
+                    if (res) {
+                        updatePreferenceSummary(preference, newValue);
+                    }
+                    return res;
+                }
+            });
+        }
+
+        //private void initListPreferenceEnum(String id, Class<? extends Enum> enumClass) {
+        private <E extends Enum> void initListPreferenceEnum(String id, final String settingKey,
+                                                             Class<E> enumSettingClass) {
             ListPreference listPreference = (ListPreference) findPreference(id);
 
             List<String> names = new ArrayList<>();
             List<String> values = new ArrayList<>();
-            for (Enum enumValue : value.getClass().getEnumConstants()) {
+            for (Enum enumValue : enumSettingClass.getEnumConstants()) {
                 names.add(StringUtils.capfirst(enumValue.name()));
                 values.add(enumValue.name().toLowerCase());
             }
@@ -333,7 +281,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             listPreference.setEntries(names.toArray(new String[0]));
             listPreference.setEntryValues(values.toArray(new String[0]));
 
-            listPreference.setValue(value.name().toLowerCase());
+            listPreference.setValue(mSettingsStorage.getString(settingKey).toLowerCase());
 
             // render summary immediately
             updatePreferenceSummary(listPreference,
@@ -344,7 +292,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             listPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    setter.set((E) findEnumByLowercaseStringValue((String) newValue, value.getClass()));
+                    mSettingsStorage.setString(settingKey, (String) newValue);
 
                     boolean res = saveSettings();
                     if (res) {
@@ -365,17 +313,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
             return super.onOptionsItemSelected(item);
         }
+    }
 
-        private static <E extends Enum> E findEnumByLowercaseStringValue(String value, Class<E> enumClass) {
-            for (E enumValue : enumClass.getEnumConstants()) {
-                if (enumValue.name().toLowerCase().equals(value))
-                    return enumValue;
-            }
-            throw new IllegalArgumentException();
-        }
-
-        private interface Setter<T> {
-            void set(T value);
-        }
+    public enum BoardStatus {
+        // stored in json as lower-cased values of these names
+        NEW,
+        REGISTERED
     }
 }
