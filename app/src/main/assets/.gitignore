@@ -1,6 +1,8 @@
 
 # see /app/build.gradle
 js/index.js
+js/wstt.js
+js/appenders
 js/package.json
 js/node_modules
 

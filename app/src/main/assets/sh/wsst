@@ -1,5 +1,5 @@
 #!/system/bin/sh
 
-WSST_PATH="../js/node_modules/node-reverse-wstunnel/bin/wstt.js"
+WSST_PATH="../js/wstt.js"
 
 exec node "$WSST_PATH" "$@"
