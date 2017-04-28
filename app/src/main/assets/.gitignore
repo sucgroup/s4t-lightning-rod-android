@@ -5,4 +5,4 @@ js/wstt.js
 js/appenders
 js/package.json
 js/node_modules
-
+js/modules/**/*.js
