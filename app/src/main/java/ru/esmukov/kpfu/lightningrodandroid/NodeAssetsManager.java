@@ -2,6 +2,12 @@ package ru.esmukov.kpfu.lightningrodandroid;
 
 import android.content.Context;
 
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +32,7 @@ import java.util.Set;
 
 public class NodeAssetsManager {
     private final String JS_PATH = "js";
+    private final String JS_DIST_TARGZ_PATH = "js_target/dist.tar.gz_"; // see app/build.gradle
     private final String TERMUX_PATH = "termux";
     private final String SH_PATH = "sh";
     // Files in this list will not be overwritten if exist.
@@ -51,6 +58,7 @@ public class NodeAssetsManager {
         if (mExtracted)
             return;
 
+        this.extractJsDist();
         this.extractJs();
         this.extractSh();
         this.extractTermux();
@@ -69,10 +77,14 @@ public class NodeAssetsManager {
 
     private void extractJs() {
         extractAssetTree(JS_PATH, JS_PATH);
-        //extractAssetToFile(JS_PATH, JS_PATH, "index.js");
+    }
+
+    private void extractJsDist() {
+        extractTarGz(JS_DIST_TARGZ_PATH, JS_PATH);
     }
 
     private void extractSh() {
+        // todo recursive?
         extractAssetToFile(SH_PATH, SH_PATH, "wsst", "wsst", true);
     }
 
@@ -100,6 +112,35 @@ public class NodeAssetsManager {
         }
     }
 
+    private void extractTarGz(String tarGzPath, String topath) {
+        // Tar unpack example: http://stackoverflow.com/a/7556307
+
+        // Dalvik's faulty GzipInputStream implementation:
+        // http://stackoverflow.com/questions/20661312/truncated-output-from-gzipinputstream-on-android
+        // http://stackoverflow.com/questions/842896/gzipinputstream-decompression-did-not-work-fine-for-the-compressed-data-with-len
+        // https://github.com/ymnk/jzlib/issues/12
+
+        try (TarArchiveInputStream is = (TarArchiveInputStream) new ArchiveStreamFactory()
+                .createArchiveInputStream("tar",
+                        new GzipCompressorInputStream(
+                                mContext.getAssets().open(tarGzPath))
+                )) {
+            TarArchiveEntry entry;
+            while ((entry = is.getNextTarEntry()) != null) {
+                final File outputFile = new File(mContext.getFilesDir(),
+                        topath + "/" + entry.getName().replaceFirst("^\\./", ""));
+                if (entry.isDirectory()) {
+                    outputFile.mkdirs(); // mkdir -p
+                } else {
+                    extractAssetFromInputStreamToFile(is, outputFile,
+                            (entry.getMode() & 111) != 0, (int)entry.getSize());
+                }
+            }
+        } catch (IOException | ArchiveException e) {
+            throw new RuntimeException(e); // todo ??
+        }
+    }
+
     private void extractAssetToFile(String frompath, String topath, String filename) {
         extractAssetToFile(frompath, topath, filename, filename, false);
     }
@@ -113,32 +154,51 @@ public class NodeAssetsManager {
 
         File file = new File(mContext.getFilesDir(), topath + "/" + tofilename);
 
-        try {
-            if (PRESERVE_FILES.contains(topath + "/" + tofilename)
-                    && file.exists())
-                return;
-
-            InputStream is = mContext.getAssets().open(frompath + "/" + fromfilename);
-            OutputStream os = new FileOutputStream(file);
-            pipe(is, os);
-            is.close();
-            os.close();
-
-            if (setExecutable) {
-                if (!file.setExecutable(true)) {
-                    throw new IOException("Unable to set +x bit on file: " + topath + "/" + tofilename);
-                }
-            }
+        try (InputStream is = mContext.getAssets().open(frompath + "/" + fromfilename)) {
+            extractAssetFromInputStreamToFile(is, file, setExecutable);
         } catch (IOException e) {
             throw new RuntimeException(e); // todo ??
         }
     }
 
-    private void pipe(InputStream is, OutputStream os) throws IOException {
-        while (true) {
-            int read = is.read(mBuffer);
+    private void extractAssetFromInputStreamToFile(
+            InputStream is, File outFile, boolean setExecutable) throws IOException {
+        extractAssetFromInputStreamToFile(is, outFile, setExecutable, -1);
+    }
+
+
+    private void extractAssetFromInputStreamToFile(
+            InputStream is, File outFile, boolean setExecutable, int readSize) throws IOException {
+        if (isPreservedFile(outFile) && outFile.exists())
+            return;
+
+        try (OutputStream os = new FileOutputStream(outFile)) {
+            pipe(is, os, readSize);
+        }
+
+        if (setExecutable) {
+            if (!outFile.setExecutable(true)) {
+                throw new IOException("Unable to set +x bit on file: " + outFile.getPath());
+            }
+        }
+    }
+
+    private boolean isPreservedFile(File file) {
+        for (String preserve : PRESERVE_FILES) {
+            if (file.getPath().endsWith(preserve))
+                return true;
+        }
+        return false;
+    }
+
+    private void pipe(InputStream is, OutputStream os, int readSize) throws IOException {
+        int leftToRead = readSize;
+        while (leftToRead > 0 || readSize < 0) {
+            int read = is.read(mBuffer, 0,
+                    readSize < 0 ? mBuffer.length : Math.min(leftToRead, mBuffer.length));
             if (read <= 0)
                 break;
+            leftToRead -= read;
             os.write(mBuffer, 0, read);
         }
     }

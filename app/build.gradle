@@ -31,6 +31,7 @@ dependencies {
     compile 'com.android.support:support-annotations:24.2.1'
 
     compile 'com.google.code.gson:gson:2.8.0'
+    compile 'org.apache.commons:commons-compress:1.13'
 
     testCompile 'junit:junit:4.12'
     compile 'org.jetbrains:annotations-java5:15.0'
@@ -54,6 +55,7 @@ node {
 task cleanJs(type: NpmTask) {
     args = ['run', 'clean']
 }
+// todo clean assets
 clean.dependsOn cleanJs
 
 
@@ -62,16 +64,18 @@ task buildJs(type: NpmTask, dependsOn: npmInstall) {
     args = ['run', 'build']
 }
 
-task copyDistJs(type: Copy, dependsOn: buildJs)
-copyDistJs {
-    from '../s4t-lightning-rod/dist/'
-    into 'src/main/assets/js/'
+task copyDistTarJs(type: Copy, dependsOn: buildJs)
+copyDistTarJs {
+    from '../s4t-lightning-rod/target/'
+    into 'src/main/assets/js_target/'
     duplicatesStrategy = 'include'
+
+    // workaround `.gz` part being stripped
+    // http://stackoverflow.com/questions/22796903/asset-is-renamed-from-tar-gz-to-tar-after-packing-apk
+    // http://stackoverflow.com/questions/4666098/why-does-android-aapt-remove-gz-file-extension-of-assets
+    rename { String fileName ->
+        fileName.replace('dist.tar.gz', 'dist.tar.gz_')
+    }
 }
 
-task installExtraJsDeps(type: NpmTask, dependsOn: copyDistJs) {
-    workingDir = file("${project.projectDir}/src/main/assets/js/")
-    args = ['install']
-}
-
-preBuild.dependsOn installExtraJsDeps
+preBuild.dependsOn copyDistTarJs
